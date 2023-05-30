@@ -3,8 +3,8 @@ package bg.solutions.hitachi.space.mission;
 import bg.solutions.hitachi.space.entities.DayWeatherForecast;
 import bg.solutions.hitachi.space.enums.Cloud;
 import bg.solutions.hitachi.space.enums.Constraints;
+import bg.solutions.hitachi.space.enums.WeatherParams;
 import bg.solutions.hitachi.space.exceptions.EmptyWeatherDataFile;
-import bg.solutions.hitachi.space.exceptions.NoSuitableDayToLaunchException;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -21,20 +21,13 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
     private static final String IS_LIGHTNING = "Yes";
     private static final String DELIMITER = ",";
     private static final int NUMBER_OF_ROWS = 7;
+    private static final int NO_APPROPRIATE_DAY_TO_LAUNCH = -1;
     private final String filePath;
     private final String senderEmailAddress;
     private final String password;
     private final String receiverEmailAddress;
-
-    private List<String[]> forecastBuffer;
-//    private String[] days;
-//    private String[] temperatures;
-//    private String[] windSpeeds;
-//    private String[] humidities;
-//    private String[] precipitations;
-//    private String[] lightnings;
-//    private String[] clouds;
     private final Set<DayWeatherForecast> dayWeatherForecasts;
+    private final List<String[]> forecastBuffer;
 
     public SpaceMission(String filePath, String senderEmailAddress, String password, String receiverEmailAddress)
         throws FileNotFoundException {
@@ -60,9 +53,11 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
             .filter(this::canLaunch)
             .min(Comparator.comparing(DayWeatherForecast::windSpeed)
                 .thenComparing(DayWeatherForecast::humidity))
-            .orElseThrow(() -> new NoSuitableDayToLaunchException(
-                "There was no suitable day found to launch the space shuttle"))
-            .dayNumber();
+            .map(DayWeatherForecast::dayNumber)
+            .orElse(NO_APPROPRIATE_DAY_TO_LAUNCH);
+//            .orElseThrow(() -> new NoSuitableDayToLaunchException(
+//                "There was no suitable day found to launch the space shuttle"))
+//            .dayNumber();
     }
 
     private boolean checkForNonEmptyWeatherData(Reader weatherDataReader) {
@@ -117,13 +112,13 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
     }
 
     private DayWeatherForecast convertDataToEntity(int index) {
-        int day = Integer.parseInt(forecastBuffer.get(0)[index]);
-        double temperature = Double.parseDouble(forecastBuffer.get(1)[index]);
-        double windSpeed = Double.parseDouble(forecastBuffer.get(2)[index]);
-        double humidity = Double.parseDouble(forecastBuffer.get(3)[index]);
-        double precipitation = Double.parseDouble(forecastBuffer.get(4)[index]);
-        boolean lightning = areThereLightnings(forecastBuffer.get(5)[index]);
-        Cloud cloud = Cloud.valueOf(forecastBuffer.get(6)[index].toUpperCase());
+        int day = Integer.parseInt(forecastBuffer.get(WeatherParams.DAYS.getValue())[index]);
+        double temperature = Double.parseDouble(forecastBuffer.get(WeatherParams.TEMPERATURES.getValue())[index]);
+        double windSpeed = Double.parseDouble(forecastBuffer.get(WeatherParams.WIND_SPEEDS.getValue())[index]);
+        double humidity = Double.parseDouble(forecastBuffer.get(WeatherParams.HUMIDITIES.getValue())[index]);
+        double precipitation = Double.parseDouble(forecastBuffer.get(WeatherParams.PRECIPITATIONS.getValue())[index]);
+        boolean lightning = areThereLightnings(forecastBuffer.get(WeatherParams.LIGHTNINGS.getValue())[index]);
+        Cloud cloud = Cloud.valueOf(forecastBuffer.get(WeatherParams.CLOUDS.getValue())[index].toUpperCase());
 
         return new DayWeatherForecast(day, temperature, windSpeed, humidity, precipitation, lightning, cloud);
     }

@@ -9,33 +9,57 @@ import java.util.Scanner;
 public class SpaceMissionApp {
     public static void main(String[] args) {
         System.out.println("Hello to the space program!");
-
-        System.out.println(
-            "To proceed using the app you need to enter \"start\" text in the field " +
-                "and to stop it you need to enter \"stop\"!");
-
+        System.out.println("To proceed using the app you need to enter \"start\" text in the field " +
+            "and to stop it you need to enter \"stop\"!");
+        System.out.println("If you want to change the language of the app you need to type \"EN\" for English and " +
+            "\"GE\" for German!");
 
         Scanner appInput = new Scanner(System.in);
         String appCommand;
+
+        // English is false, German is true;
+        boolean lang = false;
         while (true) {
-            System.out.print("Please input command: ");
+            if (!lang) {
+                System.out.print("Please input command: ");
+            } else {
+                System.out.print("Bitte geben Sie den Befehl ein: ");
+            }
+
             appCommand = appInput.nextLine();
 
             if (appCommand.equals("start")) {
-                System.out.println("To proceed you need to enter 4 must parameters as follows:");
-                System.out.print("The first one must be path to file: ");
+                if (!lang) {
+                    System.out.println("To proceed you need to enter 4 must parameters as follows:");
+                    System.out.print("The first one must be path to file: ");
+                } else {
+                    System.out.println("Um fortzufahren, müssen Sie die folgenden vier Parameter eingeben:");
+                    System.out.print("Der erste muss der Pfad zur Datei sein: ");
+                }
                 String filePath = appInput.nextLine();
                 //validation here
 
-                System.out.print("The second one must be Sender email address: ");
+                if (!lang) {
+                    System.out.print("The second one must be Sender email address: ");
+                } else {
+                    System.out.print("Die zweite muss die E-Mail-Adresse des Absenders sein: ");
+                }
                 String sender = appInput.nextLine();
                 //validation here
 
-                System.out.print("The third one must be Password: ");
+                if (!lang) {
+                    System.out.print("The third one must be Password: ");
+                } else {
+                    System.out.print("Das dritte muss Passwort sein: ");
+                }
                 String password = appInput.nextLine();
                 //validation here
 
-                System.out.print("The fourth one must be Receiver email address: ");
+                if (!lang) {
+                    System.out.print("The fourth one must be Receiver email address: ");
+                } else {
+                    System.out.print("Der vierte muss die E-Mail-Adresse des Empfängers sein: ");
+                }
                 String receiver = appInput.nextLine();
                 //validation here
 
@@ -44,12 +68,36 @@ public class SpaceMissionApp {
 
                     System.out.println(spaceMission.findPerfectDayForSpaceShuttleLaunch());
                 } catch (FileNotFoundException e) {
-                    System.out.println("There is no such file!");
+                    if (!lang) {
+                        System.out.println("There is no such file!");
+                        System.out.println("Please enter correct filepath!");
+                    } else {
+                        System.out.println("Es gibt keine solche Datei!There is no such file!");
+                        System.out.println("Bitte geben Sie den korrekten Dateipfad ein!");
+                    }
+
                 }
-            } else if (appCommand.equals("stop")) {
+
+            } else if ((appCommand.equals("stop") && !lang) || (lang && appCommand.equals("stoppen")) ) {
+                if (!lang) {
+                    System.out.println("Stopping the program!");
+                    System.out.println("Thank you for using the program!");
+                } else {
+                    System.out.println("Stoppen Sie das Programm!");
+                    System.out.println("Vielen Dank, dass Sie das Programm nutzen!");
+                }
+
                 return;
+            } else if (appCommand.equals("EN")) {
+                lang = false;
+            } else if (appCommand.equals("GE")) {
+                lang = true;
             } else {
-                System.out.println("The supported commands are \"start\" and \"stop\"!");
+                if (!lang) {
+                    System.out.println("The supported commands are \"start\", \"stop\", \"EN\" and \"GE\"!");
+                } else {
+                    System.out.println("Die unterstützten Befehle sind \"start\", \"stoppen\", \"EN\" und \"GE\"!");
+                }
             }
         }
     }
