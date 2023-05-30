@@ -1,6 +1,7 @@
 package bg.solutions.hitachi.space;
 
 import bg.solutions.hitachi.space.mission.SpaceMission;
+import bg.solutions.hitachi.space.mission.SpaceMissionAPI;
 
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -39,7 +40,7 @@ public class SpaceMissionApp {
                 //validation here
 
                 try {
-                    SpaceMission spaceMission = new SpaceMission(filePath, sender, password, receiver);
+                    SpaceMissionAPI spaceMission = new SpaceMission(filePath, sender, password, receiver);
 
                     System.out.println(spaceMission.findPerfectDayForSpaceShuttleLaunch());
                 } catch (FileNotFoundException e) {

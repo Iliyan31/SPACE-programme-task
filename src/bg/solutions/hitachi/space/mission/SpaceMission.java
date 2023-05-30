@@ -11,24 +11,29 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class SpaceMission extends SpaceMissionValidator implements SpaceMissionAPI {
     private static final String IS_LIGHTNING = "Yes";
     private static final String DELIMITER = ",";
+    private static final int NUMBER_OF_ROWS = 7;
     private final String filePath;
     private final String senderEmailAddress;
     private final String password;
     private final String receiverEmailAddress;
-    private String[] days;
-    private String[] temperatures;
-    private String[] windSpeeds;
-    private String[] humidities;
-    private String[] precipitations;
-    private String[] lightnings;
-    private String[] clouds;
+
+    private List<String[]> forecastBuffer;
+//    private String[] days;
+//    private String[] temperatures;
+//    private String[] windSpeeds;
+//    private String[] humidities;
+//    private String[] precipitations;
+//    private String[] lightnings;
+//    private String[] clouds;
     private final Set<DayWeatherForecast> dayWeatherForecasts;
 
     public SpaceMission(String filePath, String senderEmailAddress, String password, String receiverEmailAddress)
@@ -42,16 +47,19 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
         this.senderEmailAddress = senderEmailAddress;
         this.password = password;
         this.receiverEmailAddress = receiverEmailAddress;
+        this.forecastBuffer = new ArrayList<>();
         this.dayWeatherForecasts = new HashSet<>();
 
-        getWeatherData(getNumberOfColumns(filePath), new FileReader(filePath));
+        int numberOfColumns = getNumberOfColumns(filePath);
+        getWeatherData(numberOfColumns, new FileReader(filePath));
     }
 
+    @Override
     public int findPerfectDayForSpaceShuttleLaunch() {
         return dayWeatherForecasts.stream()
             .filter(this::canLaunch)
-            .min(Comparator.comparing(DayWeatherForecast::humidity)
-                .thenComparing(DayWeatherForecast::windSpeed))
+            .min(Comparator.comparing(DayWeatherForecast::windSpeed)
+                .thenComparing(DayWeatherForecast::humidity))
             .orElseThrow(() -> new NoSuitableDayToLaunchException(
                 "There was no suitable day found to launch the space shuttle"))
             .dayNumber();
@@ -83,21 +91,22 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
 
     private void getWeatherData(int numberOfColumns, Reader weatherDataReader) {
         try (var bufferedReader = new BufferedReader(weatherDataReader)) {
-            days = bufferedReader.readLine().split(DELIMITER);
-            temperatures = bufferedReader.readLine().split(DELIMITER);
-            windSpeeds = bufferedReader.readLine().split(DELIMITER);
-            humidities = bufferedReader.readLine().split(DELIMITER);
-            precipitations = bufferedReader.readLine().split(DELIMITER);
-            lightnings = bufferedReader.readLine().split(DELIMITER);
-            clouds = bufferedReader.readLine().split(DELIMITER);
+            fillForecastBuffer(bufferedReader);
 
-            if (days != null && temperatures != null && windSpeeds != null && humidities != null &&
-                precipitations != null && lightnings != null) {
-
-                convertAllRawDataToEntity(numberOfColumns);
+            if (forecastBuffer.size() != NUMBER_OF_ROWS) {
+                throw new IllegalArgumentException("There are not enough rows!");
             }
+
+            convertAllRawDataToEntity(numberOfColumns);
         } catch (IOException e) {
             throw new RuntimeException("There was problem while reading from the weather data", e);
+        }
+    }
+
+    private void fillForecastBuffer(BufferedReader bufferedReader) throws IOException {
+        String line;
+        while ((line = bufferedReader.readLine()) != null) {
+            forecastBuffer.add(line.split(DELIMITER));
         }
     }
 
@@ -108,13 +117,13 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
     }
 
     private DayWeatherForecast convertDataToEntity(int index) {
-        int day = Integer.parseInt(days[index]);
-        double temperature = Double.parseDouble(temperatures[index]);
-        double windSpeed = Double.parseDouble(windSpeeds[index]);
-        double humidity = Double.parseDouble(humidities[index]);
-        double precipitation = Double.parseDouble(precipitations[index]);
-        boolean lightning = areThereLightnings(lightnings[index]);
-        Cloud cloud = Cloud.valueOf(clouds[index].toUpperCase());
+        int day = Integer.parseInt(forecastBuffer.get(0)[index]);
+        double temperature = Double.parseDouble(forecastBuffer.get(1)[index]);
+        double windSpeed = Double.parseDouble(forecastBuffer.get(2)[index]);
+        double humidity = Double.parseDouble(forecastBuffer.get(3)[index]);
+        double precipitation = Double.parseDouble(forecastBuffer.get(4)[index]);
+        boolean lightning = areThereLightnings(forecastBuffer.get(5)[index]);
+        Cloud cloud = Cloud.valueOf(forecastBuffer.get(6)[index].toUpperCase());
 
         return new DayWeatherForecast(day, temperature, windSpeed, humidity, precipitation, lightning, cloud);
     }
