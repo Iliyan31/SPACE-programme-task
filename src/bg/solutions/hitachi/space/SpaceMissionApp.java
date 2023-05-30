@@ -1,5 +1,8 @@
 package bg.solutions.hitachi.space;
 
+import bg.solutions.hitachi.space.mission.SpaceMission;
+
+import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class SpaceMissionApp {
@@ -27,15 +30,21 @@ public class SpaceMissionApp {
                 String sender = appInput.nextLine();
                 //validation here
 
-                System.out.print("The second one must be Password: ");
+                System.out.print("The third one must be Password: ");
                 String password = appInput.nextLine();
                 //validation here
 
-                System.out.print("The second one must be Receiver email address: ");
+                System.out.print("The fourth one must be Receiver email address: ");
                 String receiver = appInput.nextLine();
                 //validation here
 
+                try {
+                    SpaceMission spaceMission = new SpaceMission(filePath, sender, password, receiver);
 
+                    System.out.println(spaceMission.findPerfectDayForSpaceShuttleLaunch());
+                } catch (FileNotFoundException e) {
+                    System.out.println("There is no such file!");
+                }
             } else if (appCommand.equals("stop")) {
                 return;
             } else {
