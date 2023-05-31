@@ -13,14 +13,15 @@ public class SpaceMissionApp {
             "and to stop it you need to enter \"stop\"!");
         System.out.println("If you want to change the language of the app you need to type \"EN\" for English and " +
             "\"GE\" for German!");
+        System.out.println("Note that the command \"stop\" for German is \"stoppen\"!");
 
         Scanner appInput = new Scanner(System.in);
         String appCommand;
 
-        // English is false, German is true;
-        boolean lang = false;
+        boolean isGermanSet = false;
+
         while (true) {
-            if (!lang) {
+            if (!isGermanSet) {
                 System.out.print("Please input command: ");
             } else {
                 System.out.print("Bitte geben Sie den Befehl ein: ");
@@ -29,7 +30,7 @@ public class SpaceMissionApp {
             appCommand = appInput.nextLine();
 
             if (appCommand.equals("start")) {
-                if (!lang) {
+                if (!isGermanSet) {
                     System.out.println("To proceed you need to enter 4 must parameters as follows:");
                     System.out.print("The first one must be path to file: ");
                 } else {
@@ -39,7 +40,7 @@ public class SpaceMissionApp {
                 String filePath = appInput.nextLine();
                 //validation here
 
-                if (!lang) {
+                if (!isGermanSet) {
                     System.out.print("The second one must be Sender email address: ");
                 } else {
                     System.out.print("Die zweite muss die E-Mail-Adresse des Absenders sein: ");
@@ -47,7 +48,7 @@ public class SpaceMissionApp {
                 String sender = appInput.nextLine();
                 //validation here
 
-                if (!lang) {
+                if (!isGermanSet) {
                     System.out.print("The third one must be Password: ");
                 } else {
                     System.out.print("Das dritte muss Passwort sein: ");
@@ -55,7 +56,7 @@ public class SpaceMissionApp {
                 String password = appInput.nextLine();
                 //validation here
 
-                if (!lang) {
+                if (!isGermanSet) {
                     System.out.print("The fourth one must be Receiver email address: ");
                 } else {
                     System.out.print("Der vierte muss die E-Mail-Adresse des Empfängers sein: ");
@@ -64,11 +65,17 @@ public class SpaceMissionApp {
                 //validation here
 
                 try {
-                    SpaceMissionAPI spaceMission = new SpaceMission(filePath, sender, password, receiver);
 
+                    SpaceMissionAPI spaceMission = new SpaceMission(isGermanSet, filePath, sender, password, receiver);
+
+                    var startTime = System.nanoTime();
                     System.out.println(spaceMission.findPerfectDayForSpaceShuttleLaunch());
+                    var endTime = System.nanoTime();
+
+                    System.out.println((endTime - startTime) );/// 1_000_000_000
+
                 } catch (FileNotFoundException e) {
-                    if (!lang) {
+                    if (!isGermanSet) {
                         System.out.println("There is no such file!");
                         System.out.println("Please enter correct filepath!");
                     } else {
@@ -76,10 +83,18 @@ public class SpaceMissionApp {
                         System.out.println("Bitte geben Sie den korrekten Dateipfad ein!");
                     }
 
+                } catch (Exception e) {
+                    if (!isGermanSet) {
+                        System.out.println(e.getMessage());
+                        System.out.println("Error occured in the app, please restart with \"start\" command");
+                    } else {
+                        System.out.println("Es gibt keine solche Datei!There is no such file!");
+                        System.out.println("Bitte geben Sie den korrekten Dateipfad ein!");
+                    }
                 }
 
-            } else if ((appCommand.equals("stop") && !lang) || (lang && appCommand.equals("stoppen")) ) {
-                if (!lang) {
+            } else if ((appCommand.equals("stop") && !isGermanSet) || (isGermanSet && appCommand.equals("stoppen")) ) {
+                if (!isGermanSet) {
                     System.out.println("Stopping the program!");
                     System.out.println("Thank you for using the program!");
                 } else {
@@ -88,12 +103,16 @@ public class SpaceMissionApp {
                 }
 
                 return;
+            } else if (appCommand.equals("stoppen")) {
+                System.out.println("Note that the command \"stop\" only for German is \"stoppen\"!");
+            } else if (appCommand.equals("stop")) {
+                System.out.println("Beachten Sie, dass der Befehl \"stop\" für Deutsch \"stoppen\" lautet!");
             } else if (appCommand.equals("EN")) {
-                lang = false;
+                isGermanSet = false;
             } else if (appCommand.equals("GE")) {
-                lang = true;
+                isGermanSet = true;
             } else {
-                if (!lang) {
+                if (!isGermanSet) {
                     System.out.println("The supported commands are \"start\", \"stop\", \"EN\" and \"GE\"!");
                 } else {
                     System.out.println("Die unterstützten Befehle sind \"start\", \"stoppen\", \"EN\" und \"GE\"!");

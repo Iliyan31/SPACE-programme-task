@@ -14,7 +14,10 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 
 public class SpaceMission extends SpaceMissionValidator implements SpaceMissionAPI {
@@ -22,26 +25,31 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
     private static final String DELIMITER = ",";
     private static final int NUMBER_OF_ROWS = 7;
     private static final int NO_APPROPRIATE_DAY_TO_LAUNCH = -1;
+    private final boolean isGermanSet;
     private final String filePath;
     private final String senderEmailAddress;
     private final String password;
     private final String receiverEmailAddress;
-    private final Set<DayWeatherForecast> dayWeatherForecasts;
+    private final Queue<DayWeatherForecast> dayWeatherForecasts;
     private final List<String[]> forecastBuffer;
 
-    public SpaceMission(String filePath, String senderEmailAddress, String password, String receiverEmailAddress)
+    public SpaceMission(boolean isGermanSet, String filePath, String senderEmailAddress, String password,
+                        String receiverEmailAddress)
         throws FileNotFoundException {
-        validateFilePath(filePath);
-        validateSenderEmailAddress(senderEmailAddress);
-        validatePassword(password);
-        validateReceiverEmailAddress(receiverEmailAddress);
+        validateFilePath(filePath, isGermanSet);
+        validateSenderEmailAddress(senderEmailAddress, isGermanSet);
+        validatePassword(password, isGermanSet);
+        validateReceiverEmailAddress(receiverEmailAddress, isGermanSet);
 
+        this.isGermanSet = isGermanSet;
         this.filePath = filePath;
         this.senderEmailAddress = senderEmailAddress;
         this.password = password;
         this.receiverEmailAddress = receiverEmailAddress;
         this.forecastBuffer = new ArrayList<>();
-        this.dayWeatherForecasts = new HashSet<>();
+        this.dayWeatherForecasts = new PriorityQueue<>
+            (Comparator.comparing(DayWeatherForecast::windSpeed)
+            .thenComparing(DayWeatherForecast::humidity));
 
         int numberOfColumns = getNumberOfColumns(filePath);
         getWeatherData(numberOfColumns, new FileReader(filePath));
@@ -49,21 +57,23 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
 
     @Override
     public int findPerfectDayForSpaceShuttleLaunch() {
-        return dayWeatherForecasts.stream()
-            .filter(this::canLaunch)
-            .min(Comparator.comparing(DayWeatherForecast::windSpeed)
-                .thenComparing(DayWeatherForecast::humidity))
-            .map(DayWeatherForecast::dayNumber)
-            .orElse(NO_APPROPRIATE_DAY_TO_LAUNCH);
-//            .orElseThrow(() -> new NoSuitableDayToLaunchException(
-//                "There was no suitable day found to launch the space shuttle"))
-//            .dayNumber();
+        if (dayWeatherForecasts.size() == 0) {
+            return NO_APPROPRIATE_DAY_TO_LAUNCH;
+        }
+
+        return dayWeatherForecasts.peek().dayNumber();
     }
 
     private boolean checkForNonEmptyWeatherData(Reader weatherDataReader) {
         try {
             return weatherDataReader.ready();
         } catch (IOException e) {
+            if (isGermanSet) {
+                throw new RuntimeException(
+                    "Bei der Suche nach einem leeren Wetterdatenleser ist in der " +
+                        "Methode ready() ein Problem aufgetreten!", e);
+            }
+
             throw new RuntimeException(
                 "There was problem in ready() method when checking for empty weather data reader!", e);
         }
@@ -77,8 +87,16 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
                 return bufferedReader.readLine().split(DELIMITER).length;
 
             } catch (IOException e) {
+                if (isGermanSet) {
+                    throw new RuntimeException("Beim Auslesen der Wetterdaten ist ein Problem aufgetreten", e);
+                }
+
                 throw new RuntimeException("There was problem while reading from the weather data", e);
             }
+        }
+
+        if (isGermanSet) {
+            throw new EmptyWeatherDataFile("Die angegebene Datei enthält keine Wetterdaten!");
         }
 
         throw new EmptyWeatherDataFile("There is no weather data in the given file!");
@@ -87,13 +105,14 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
     private void getWeatherData(int numberOfColumns, Reader weatherDataReader) {
         try (var bufferedReader = new BufferedReader(weatherDataReader)) {
             fillForecastBuffer(bufferedReader);
+            validateForecastBuffer(forecastBuffer, NUMBER_OF_ROWS, isGermanSet);
+            convertAllRawDataToEntity(numberOfColumns);
 
-            if (forecastBuffer.size() != NUMBER_OF_ROWS) {
-                throw new IllegalArgumentException("There are not enough rows!");
+        } catch (IOException e) {
+            if (isGermanSet) {
+                throw new RuntimeException("Beim Auslesen der Wetterdaten ist ein Problem aufgetreten", e);
             }
 
-            convertAllRawDataToEntity(numberOfColumns);
-        } catch (IOException e) {
             throw new RuntimeException("There was problem while reading from the weather data", e);
         }
     }
@@ -107,7 +126,11 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
 
     private void convertAllRawDataToEntity(final int numColumns) {
         for (int i = 1; i < numColumns; i++) {
-            dayWeatherForecasts.add(convertDataToEntity(i));
+            DayWeatherForecast dayWeatherForecast = convertDataToEntity(i);
+
+            if (canLaunch(dayWeatherForecast)) {
+                dayWeatherForecasts.add(dayWeatherForecast);
+            }
         }
     }
 
