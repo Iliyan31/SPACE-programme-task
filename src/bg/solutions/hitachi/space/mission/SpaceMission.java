@@ -5,6 +5,7 @@ import bg.solutions.hitachi.space.enums.Cloud;
 import bg.solutions.hitachi.space.enums.Constraints;
 import bg.solutions.hitachi.space.enums.WeatherParams;
 import bg.solutions.hitachi.space.generators.ReportGenerator;
+import bg.solutions.hitachi.space.mail.MailClient;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -33,6 +34,7 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
     private final Queue<DayWeatherForecast> dayWeatherForecasts;
     private final List<DayWeatherForecast> allDaysForecasts;
     private final ReportGenerator reportGenerator;
+    private boolean isReportGenerated;
 
     public SpaceMission(boolean isGermanSet, String filePath, String senderEmailAddress, String password,
                         String receiverEmailAddress)
@@ -58,6 +60,7 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
         getWeatherData(numberOfColumns, new FileReader(filePath));
 
         this.reportGenerator = ReportGenerator.of(isGermanSet, allDaysForecasts);
+        this.isReportGenerated = false;
     }
 
     @Override
@@ -71,7 +74,22 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
 
     @Override
     public String generateWeatherReport() {
-        return reportGenerator.generateReport();
+        String response = reportGenerator.generateReport();
+        isReportGenerated = true;
+
+        return response;
+    }
+
+    @Override
+    public String sendEmail() {
+        if (!isReportGenerated) {
+            generateWeatherReport();
+        }
+
+        MailClient mailClient = new MailClient(senderEmailAddress, password, receiverEmailAddress,
+            findPerfectDayForSpaceShuttleLaunch(), isGermanSet);
+
+        return mailClient.sendEmail();
     }
 
     private int getNumberOfColumns(String filePath) throws FileNotFoundException {

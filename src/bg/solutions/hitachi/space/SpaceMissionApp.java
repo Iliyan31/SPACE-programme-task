@@ -76,7 +76,7 @@ public class SpaceMissionApp {
                     spaceMission.generateWeatherReport();
                     var endTime = System.nanoTime();
 
-
+                    System.out.println(spaceMission.sendEmail());
                     System.out.println((endTime - startTime));// / 1_000_000_000
 
                 } catch (FileNotFoundException e) {

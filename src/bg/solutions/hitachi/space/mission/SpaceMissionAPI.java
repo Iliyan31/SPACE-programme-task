@@ -22,4 +22,13 @@ public interface SpaceMissionAPI {
      * @return String message for export status.
      */
     String generateWeatherReport();
+
+    /**
+     * This method is for sending the generated weather report.
+     * If there was no report previously generated, it will be generated automatically.
+     * This method will use the given sender email, password and receiver email passed to the constructor.
+     *
+     * @return String message for sent status.
+     */
+    String sendEmail();
 }
