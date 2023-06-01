@@ -4,7 +4,7 @@ import bg.solutions.hitachi.space.entities.DayWeatherForecast;
 import bg.solutions.hitachi.space.enums.Cloud;
 import bg.solutions.hitachi.space.enums.Constraints;
 import bg.solutions.hitachi.space.enums.WeatherParams;
-import bg.solutions.hitachi.space.exceptions.EmptyWeatherDataFile;
+import bg.solutions.hitachi.space.generators.ReportGenerator;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -13,12 +13,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
-import java.util.Set;
 
 public class SpaceMission extends SpaceMissionValidator implements SpaceMissionAPI {
     private static final String IS_LIGHTNING = "Yes";
@@ -30,8 +27,12 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
     private final String senderEmailAddress;
     private final String password;
     private final String receiverEmailAddress;
+
+    // I use this queue only for optimisation for the method findPerfectDayForSpaceShuttleLaunch() so I can reduce the
+    // performance penalty
     private final Queue<DayWeatherForecast> dayWeatherForecasts;
-    private final List<String[]> forecastBuffer;
+    private final List<DayWeatherForecast> allDaysForecasts;
+    private final ReportGenerator reportGenerator;
 
     public SpaceMission(boolean isGermanSet, String filePath, String senderEmailAddress, String password,
                         String receiverEmailAddress)
@@ -46,13 +47,17 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
         this.senderEmailAddress = senderEmailAddress;
         this.password = password;
         this.receiverEmailAddress = receiverEmailAddress;
-        this.forecastBuffer = new ArrayList<>();
+
         this.dayWeatherForecasts = new PriorityQueue<>
             (Comparator.comparing(DayWeatherForecast::windSpeed)
-            .thenComparing(DayWeatherForecast::humidity));
+                .thenComparing(DayWeatherForecast::humidity));
+
+        this.allDaysForecasts = new ArrayList<>();
 
         int numberOfColumns = getNumberOfColumns(filePath);
         getWeatherData(numberOfColumns, new FileReader(filePath));
+
+        this.reportGenerator = ReportGenerator.of(isGermanSet, allDaysForecasts);
     }
 
     @Override
@@ -64,49 +69,18 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
         return dayWeatherForecasts.peek().dayNumber();
     }
 
-    private boolean checkForNonEmptyWeatherData(Reader weatherDataReader) {
-        try {
-            return weatherDataReader.ready();
-        } catch (IOException e) {
-            if (isGermanSet) {
-                throw new RuntimeException(
-                    "Bei der Suche nach einem leeren Wetterdatenleser ist in der " +
-                        "Methode ready() ein Problem aufgetreten!", e);
-            }
-
-            throw new RuntimeException(
-                "There was problem in ready() method when checking for empty weather data reader!", e);
-        }
+    @Override
+    public String generateWeatherReport() {
+        return reportGenerator.generateReport();
     }
 
     private int getNumberOfColumns(String filePath) throws FileNotFoundException {
         Reader reader = new FileReader(filePath);
 
-        if (checkForNonEmptyWeatherData(reader)) {
-            try (var bufferedReader = new BufferedReader(reader)) {
-                return bufferedReader.readLine().split(DELIMITER).length;
+        validateForEmptyFile(reader, isGermanSet);
 
-            } catch (IOException e) {
-                if (isGermanSet) {
-                    throw new RuntimeException("Beim Auslesen der Wetterdaten ist ein Problem aufgetreten", e);
-                }
-
-                throw new RuntimeException("There was problem while reading from the weather data", e);
-            }
-        }
-
-        if (isGermanSet) {
-            throw new EmptyWeatherDataFile("Die angegebene Datei enthält keine Wetterdaten!");
-        }
-
-        throw new EmptyWeatherDataFile("There is no weather data in the given file!");
-    }
-
-    private void getWeatherData(int numberOfColumns, Reader weatherDataReader) {
-        try (var bufferedReader = new BufferedReader(weatherDataReader)) {
-            fillForecastBuffer(bufferedReader);
-            validateForecastBuffer(forecastBuffer, NUMBER_OF_ROWS, isGermanSet);
-            convertAllRawDataToEntity(numberOfColumns);
+        try (var bufferedReader = new BufferedReader(reader)) {
+            return bufferedReader.readLine().split(DELIMITER).length;
 
         } catch (IOException e) {
             if (isGermanSet) {
@@ -117,24 +91,44 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
         }
     }
 
-    private void fillForecastBuffer(BufferedReader bufferedReader) throws IOException {
-        String line;
-        while ((line = bufferedReader.readLine()) != null) {
-            forecastBuffer.add(line.split(DELIMITER));
+    private void getWeatherData(int numberOfColumns, Reader weatherDataReader) {
+        try (var bufferedReader = new BufferedReader(weatherDataReader)) {
+            List<String[]> forecastBuffer = readFileByLines(bufferedReader);
+            validateForecastBuffer(forecastBuffer, NUMBER_OF_ROWS, isGermanSet);
+
+            convertAllRawDataToEntity(forecastBuffer, numberOfColumns);
+        } catch (IOException e) {
+            if (isGermanSet) {
+                throw new RuntimeException("Beim Auslesen der Wetterdaten ist ein Problem aufgetreten", e);
+            }
+
+            throw new RuntimeException("There was problem while reading from the weather data", e);
         }
     }
 
-    private void convertAllRawDataToEntity(final int numColumns) {
-        for (int i = 1; i < numColumns; i++) {
-            DayWeatherForecast dayWeatherForecast = convertDataToEntity(i);
+    private List<String[]> readFileByLines(BufferedReader bufferedReader) throws IOException {
+        String line;
+        List<String[]> buffer = new ArrayList<>();
 
+        while ((line = bufferedReader.readLine()) != null) {
+            buffer.add(line.split(DELIMITER));
+        }
+
+        return buffer;
+    }
+
+    private void convertAllRawDataToEntity(List<String[]> forecastBuffer, final int numColumns) {
+        for (int i = 1; i < numColumns; i++) {
+            DayWeatherForecast dayWeatherForecast = convertDataToEntity(forecastBuffer, i);
+
+            allDaysForecasts.add(dayWeatherForecast);
             if (canLaunch(dayWeatherForecast)) {
                 dayWeatherForecasts.add(dayWeatherForecast);
             }
         }
     }
 
-    private DayWeatherForecast convertDataToEntity(int index) {
+    private DayWeatherForecast convertDataToEntity(List<String[]> forecastBuffer, int index) {
         int day = Integer.parseInt(forecastBuffer.get(WeatherParams.DAYS.getValue())[index]);
         double temperature = Double.parseDouble(forecastBuffer.get(WeatherParams.TEMPERATURES.getValue())[index]);
         double windSpeed = Double.parseDouble(forecastBuffer.get(WeatherParams.WIND_SPEEDS.getValue())[index]);

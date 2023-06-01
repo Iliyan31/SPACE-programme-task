@@ -10,6 +10,7 @@ public enum WeatherParams {
     CLOUDS(6);
 
     private final int value;
+
     WeatherParams(final int value) {
         this.value = value;
     }

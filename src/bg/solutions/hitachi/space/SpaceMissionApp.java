@@ -66,13 +66,18 @@ public class SpaceMissionApp {
 
                 try {
 
+
                     SpaceMissionAPI spaceMission = new SpaceMission(isGermanSet, filePath, sender, password, receiver);
 
-                    var startTime = System.nanoTime();
+
                     System.out.println(spaceMission.findPerfectDayForSpaceShuttleLaunch());
+
+                    var startTime = System.nanoTime();
+                    spaceMission.generateWeatherReport();
                     var endTime = System.nanoTime();
 
-                    System.out.println((endTime - startTime) );/// 1_000_000_000
+
+                    System.out.println((endTime - startTime));// / 1_000_000_000
 
                 } catch (FileNotFoundException e) {
                     if (!isGermanSet) {
@@ -93,7 +98,7 @@ public class SpaceMissionApp {
                     }
                 }
 
-            } else if ((appCommand.equals("stop") && !isGermanSet) || (isGermanSet && appCommand.equals("stoppen")) ) {
+            } else if ((appCommand.equals("stop") && !isGermanSet) || (isGermanSet && appCommand.equals("stoppen"))) {
                 if (!isGermanSet) {
                     System.out.println("Stopping the program!");
                     System.out.println("Thank you for using the program!");

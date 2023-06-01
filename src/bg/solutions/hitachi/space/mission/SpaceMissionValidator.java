@@ -1,5 +1,9 @@
 package bg.solutions.hitachi.space.mission;
 
+import bg.solutions.hitachi.space.exceptions.EmptyWeatherDataFile;
+
+import java.io.IOException;
+import java.io.Reader;
 import java.util.List;
 
 public abstract class SpaceMissionValidator {
@@ -52,6 +56,31 @@ public abstract class SpaceMissionValidator {
             }
 
             throw new IllegalArgumentException("There are not enough rows!");
+        }
+    }
+
+    void validateForEmptyFile(Reader reader, boolean isGermanSet) {
+        if (!checkForNonEmptyWeatherData(reader, isGermanSet)) {
+            if (isGermanSet) {
+                throw new EmptyWeatherDataFile("Die angegebene Datei enthält keine Wetterdaten!");
+            }
+
+            throw new EmptyWeatherDataFile("There is no weather data in the given file!");
+        }
+    }
+
+    private boolean checkForNonEmptyWeatherData(Reader weatherDataReader, boolean isGermanSet) {
+        try {
+            return weatherDataReader.ready();
+        } catch (IOException e) {
+            if (isGermanSet) {
+                throw new RuntimeException(
+                    "Bei der Suche nach einem leeren Wetterdatenleser ist in der " +
+                        "Methode ready() ein Problem aufgetreten!", e);
+            }
+
+            throw new RuntimeException(
+                "There was problem in ready() method when checking for empty weather data reader!", e);
         }
     }
 }
