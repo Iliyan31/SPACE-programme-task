@@ -1,15 +1,18 @@
 package bg.solutions.hitachi.space.generators;
 
+import bg.solutions.hitachi.space.criteria.PrecipitationConfigurator;
 import bg.solutions.hitachi.space.entities.DayWeatherForecast;
-import bg.solutions.hitachi.space.enums.Constraints;
 
 import java.util.List;
 
 public class PrecipitationGenerator implements StatisticOperations {
     private final List<DayWeatherForecast> forecasts;
+    private final PrecipitationConfigurator precipitationConfigurator;
 
-    public PrecipitationGenerator(List<DayWeatherForecast> precipitations) {
+    public PrecipitationGenerator(List<DayWeatherForecast> precipitations,
+                                  PrecipitationConfigurator precipitationConfigurator) {
         this.forecasts = precipitations;
+        this.precipitationConfigurator = precipitationConfigurator;
     }
 
     @Override
@@ -61,6 +64,6 @@ public class PrecipitationGenerator implements StatisticOperations {
     }
 
     private boolean isThereNoPrecipitation(DayWeatherForecast dayWeatherForecast) {
-        return dayWeatherForecast.precipitation() <= Constraints.MAX_PRECIPITATION_PERCENTS.getValue();
+        return precipitationConfigurator.isThereNoPrecipitation(dayWeatherForecast);
     }
 }

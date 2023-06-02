@@ -1,15 +1,17 @@
 package bg.solutions.hitachi.space.generators;
 
+import bg.solutions.hitachi.space.criteria.CloudsConfigurator;
 import bg.solutions.hitachi.space.entities.DayWeatherForecast;
-import bg.solutions.hitachi.space.enums.Cloud;
 
 import java.util.List;
 
 public class CloudsGenerator {
     private final List<DayWeatherForecast> forecasts;
+    private final CloudsConfigurator cloudsConfigurator;
 
-    public CloudsGenerator(List<DayWeatherForecast> dayWeatherForecasts) {
+    public CloudsGenerator(List<DayWeatherForecast> dayWeatherForecasts, CloudsConfigurator cloudsConfigurator) {
         this.forecasts = dayWeatherForecasts;
+        this.cloudsConfigurator = cloudsConfigurator;
     }
 
     public int getPerfectDay() {
@@ -21,6 +23,6 @@ public class CloudsGenerator {
     }
 
     private boolean areCloudsSuitable(DayWeatherForecast dayWeatherForecast) {
-        return dayWeatherForecast.clouds() == Cloud.CIRRUS || dayWeatherForecast.clouds() == Cloud.STRATUS;
+        return cloudsConfigurator.areCloudsSuitable(dayWeatherForecast);
     }
 }

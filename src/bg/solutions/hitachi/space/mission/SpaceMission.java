@@ -1,8 +1,8 @@
 package bg.solutions.hitachi.space.mission;
 
+import bg.solutions.hitachi.space.criteria.CriteriaConfigurator;
 import bg.solutions.hitachi.space.entities.DayWeatherForecast;
 import bg.solutions.hitachi.space.enums.Cloud;
-import bg.solutions.hitachi.space.enums.Constraints;
 import bg.solutions.hitachi.space.enums.WeatherParams;
 import bg.solutions.hitachi.space.generators.ReportGenerator;
 import bg.solutions.hitachi.space.mail.MailClient;
@@ -34,10 +34,11 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
     private final Queue<DayWeatherForecast> dayWeatherForecasts;
     private final List<DayWeatherForecast> allDaysForecasts;
     private final ReportGenerator reportGenerator;
+    private final CriteriaConfigurator criteriaConfigurator;
     private boolean isReportGenerated;
 
     public SpaceMission(boolean isGermanSet, String filePath, String senderEmailAddress, String password,
-                        String receiverEmailAddress)
+                        String receiverEmailAddress, CriteriaConfigurator criteriaConfigurator)
         throws FileNotFoundException {
         validateFilePath(filePath, isGermanSet);
         validateSenderEmailAddress(senderEmailAddress, isGermanSet);
@@ -49,6 +50,7 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
         this.senderEmailAddress = senderEmailAddress;
         this.password = password;
         this.receiverEmailAddress = receiverEmailAddress;
+        this.criteriaConfigurator = criteriaConfigurator;
 
         this.dayWeatherForecasts = new PriorityQueue<>
             (Comparator.comparing(DayWeatherForecast::windSpeed)
@@ -59,7 +61,7 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
         int numberOfColumns = getNumberOfColumns(filePath);
         getWeatherData(numberOfColumns, new FileReader(filePath));
 
-        this.reportGenerator = ReportGenerator.of(isGermanSet, allDaysForecasts);
+        this.reportGenerator = ReportGenerator.of(isGermanSet, allDaysForecasts, criteriaConfigurator);
         this.isReportGenerated = false;
     }
 
@@ -111,7 +113,9 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
 
     private void getWeatherData(int numberOfColumns, Reader weatherDataReader) {
         try (var bufferedReader = new BufferedReader(weatherDataReader)) {
-            List<String[]> forecastBuffer = readFileByLines(bufferedReader);
+
+            List<String[]> forecastBuffer = readFileByLines(bufferedReader, numberOfColumns);
+
             validateForecastBuffer(forecastBuffer, NUMBER_OF_ROWS, isGermanSet);
 
             convertAllRawDataToEntity(forecastBuffer, numberOfColumns);
@@ -124,12 +128,16 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
         }
     }
 
-    private List<String[]> readFileByLines(BufferedReader bufferedReader) throws IOException {
+    private List<String[]> readFileByLines(BufferedReader bufferedReader, int numberOfColumns) throws IOException {
         String line;
         List<String[]> buffer = new ArrayList<>();
 
         while ((line = bufferedReader.readLine()) != null) {
-            buffer.add(line.split(DELIMITER));
+            String[] splitRow = line.split(DELIMITER);
+
+            validateSplitRows(splitRow, numberOfColumns, isGermanSet);
+
+            buffer.add(splitRow);
         }
 
         return buffer;
@@ -159,40 +167,15 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
     }
 
     private boolean areThereLightnings(String lightning) {
-        return lightning.equals(IS_LIGHTNING);
+        return lightning.equalsIgnoreCase(IS_LIGHTNING);
     }
 
     private boolean canLaunch(DayWeatherForecast dayWeatherForecast) {
-        return isTemperatureSuitable(dayWeatherForecast) &&
-            isWindSpeedSuitable(dayWeatherForecast) &&
-            isHumiditySuitable(dayWeatherForecast) &&
-            isThereNoPrecipitation(dayWeatherForecast) &&
-            areThereNoLightnings(dayWeatherForecast) &&
-            areCloudsSuitable(dayWeatherForecast);
-    }
-
-    private boolean isTemperatureSuitable(DayWeatherForecast dayWeatherForecast) {
-        return dayWeatherForecast.temperature() > Constraints.MIN_TEMPERATURE_VALUE.getValue() &&
-            dayWeatherForecast.temperature() < Constraints.MAX_TEMPERATURE_VALUE.getValue();
-    }
-
-    private boolean isWindSpeedSuitable(DayWeatherForecast dayWeatherForecast) {
-        return dayWeatherForecast.windSpeed() <= Constraints.MAX_WIND_SPEED.getValue();
-    }
-
-    private boolean isHumiditySuitable(DayWeatherForecast dayWeatherForecast) {
-        return dayWeatherForecast.humidity() <= Constraints.MAX_HUMIDITY_PERCENT.getValue();
-    }
-
-    private boolean isThereNoPrecipitation(DayWeatherForecast dayWeatherForecast) {
-        return dayWeatherForecast.precipitation() <= Constraints.MAX_PRECIPITATION_PERCENTS.getValue();
-    }
-
-    private boolean areThereNoLightnings(DayWeatherForecast dayWeatherForecast) {
-        return !dayWeatherForecast.lightning();
-    }
-
-    private boolean areCloudsSuitable(DayWeatherForecast dayWeatherForecast) {
-        return dayWeatherForecast.clouds() == Cloud.CIRRUS || dayWeatherForecast.clouds() == Cloud.STRATUS;
+        return criteriaConfigurator.isTemperatureSuitable(dayWeatherForecast) &&
+            criteriaConfigurator.isWindSpeedSuitable(dayWeatherForecast) &&
+            criteriaConfigurator.isHumiditySuitable(dayWeatherForecast) &&
+            criteriaConfigurator.isThereNoPrecipitation(dayWeatherForecast) &&
+            criteriaConfigurator.areThereNoLightnings(dayWeatherForecast) &&
+            criteriaConfigurator.areCloudsSuitable(dayWeatherForecast);
     }
 }

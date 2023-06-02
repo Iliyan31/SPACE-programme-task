@@ -83,4 +83,28 @@ public abstract class SpaceMissionValidator {
                 "There was problem in ready() method when checking for empty weather data reader!", e);
         }
     }
+
+    void validateSplitRows(String[] row, int columnsNumber, boolean isGermanSet) {
+        if (row.length != columnsNumber) {
+            if (isGermanSet) {
+                throw new IllegalArgumentException("");
+            }
+
+            throw new IllegalArgumentException(
+                "Every row in the file must have the same columns number as the header row!");
+        }
+
+
+    }
+
+    private void validateStringInSplitRow(String[] row, boolean isGermanSet) {
+        for (String str : row) {
+            if (str == null || str.isEmpty() || str.isBlank()) {
+                if (isGermanSet) {
+                    throw new IllegalArgumentException("");
+                }
+                throw new IllegalArgumentException("None of the row values can be null, empty or blank!");
+            }
+        }
+    }
 }

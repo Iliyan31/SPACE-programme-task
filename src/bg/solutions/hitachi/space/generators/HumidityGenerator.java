@@ -1,7 +1,7 @@
 package bg.solutions.hitachi.space.generators;
 
+import bg.solutions.hitachi.space.criteria.HumidityConfigurator;
 import bg.solutions.hitachi.space.entities.DayWeatherForecast;
-import bg.solutions.hitachi.space.enums.Constraints;
 
 import java.util.Comparator;
 import java.util.List;
@@ -9,8 +9,11 @@ import java.util.List;
 public class HumidityGenerator implements StatisticOperations {
     private final List<DayWeatherForecast> forecasts;
 
-    public HumidityGenerator(List<DayWeatherForecast> dayWeatherForecasts) {
+    private final HumidityConfigurator humidityConfigurator;
+
+    public HumidityGenerator(List<DayWeatherForecast> dayWeatherForecasts, HumidityConfigurator humidityConfigurator) {
         this.forecasts = dayWeatherForecasts;
+        this.humidityConfigurator = humidityConfigurator;
     }
 
     @Override
@@ -67,6 +70,6 @@ public class HumidityGenerator implements StatisticOperations {
     }
 
     private boolean isHumiditySuitable(DayWeatherForecast dayWeatherForecast) {
-        return dayWeatherForecast.humidity() <= Constraints.MAX_HUMIDITY_PERCENT.getValue();
+        return humidityConfigurator.isHumiditySuitable(dayWeatherForecast);
     }
 }

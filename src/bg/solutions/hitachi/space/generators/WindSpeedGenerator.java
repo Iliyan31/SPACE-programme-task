@@ -1,7 +1,7 @@
 package bg.solutions.hitachi.space.generators;
 
+import bg.solutions.hitachi.space.criteria.WindSpeedConfigurator;
 import bg.solutions.hitachi.space.entities.DayWeatherForecast;
-import bg.solutions.hitachi.space.enums.Constraints;
 
 import java.util.Comparator;
 import java.util.List;
@@ -9,8 +9,12 @@ import java.util.List;
 public class WindSpeedGenerator implements StatisticOperations {
     private final List<DayWeatherForecast> forecasts;
 
-    public WindSpeedGenerator(List<DayWeatherForecast> dayWeatherForecasts) {
+    private final WindSpeedConfigurator windSpeedConfigurator;
+
+    public WindSpeedGenerator(List<DayWeatherForecast> dayWeatherForecasts,
+                              WindSpeedConfigurator windSpeedConfigurator) {
         this.forecasts = dayWeatherForecasts;
+        this.windSpeedConfigurator = windSpeedConfigurator;
     }
 
     @Override
@@ -67,6 +71,6 @@ public class WindSpeedGenerator implements StatisticOperations {
     }
 
     private boolean isWindSpeedSuitable(DayWeatherForecast dayWeatherForecast) {
-        return dayWeatherForecast.windSpeed() <= Constraints.MAX_WIND_SPEED.getValue();
+        return windSpeedConfigurator.isWindSpeedSuitable(dayWeatherForecast);
     }
 }

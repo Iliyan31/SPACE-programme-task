@@ -1,5 +1,6 @@
 package bg.solutions.hitachi.space.generators;
 
+import bg.solutions.hitachi.space.criteria.CriteriaConfigurator;
 import bg.solutions.hitachi.space.entities.DayWeatherForecast;
 
 import java.io.FileWriter;
@@ -34,14 +35,15 @@ public class ReportGenerator {
         this.cloudsGenerator = cloudsGenerator;
     }
 
-    public static ReportGenerator of(boolean isGermanSet, List<DayWeatherForecast> dayWeatherForecastList) {
+    public static ReportGenerator of(boolean isGermanSet, List<DayWeatherForecast> dayWeatherForecastList,
+                                     CriteriaConfigurator criteriaConfigurator) {
         return new ReportGenerator(isGermanSet,
-            new TemperatureGenerator(dayWeatherForecastList),
-            new WindSpeedGenerator(dayWeatherForecastList),
-            new HumidityGenerator(dayWeatherForecastList),
-            new PrecipitationGenerator(dayWeatherForecastList),
-            new LightningsGenerator(dayWeatherForecastList),
-            new CloudsGenerator(dayWeatherForecastList));
+            new TemperatureGenerator(dayWeatherForecastList, criteriaConfigurator.temperatureConfigurator()),
+            new WindSpeedGenerator(dayWeatherForecastList, criteriaConfigurator.windSpeedConfigurator()),
+            new HumidityGenerator(dayWeatherForecastList, criteriaConfigurator.humidityConfigurator()),
+            new PrecipitationGenerator(dayWeatherForecastList, criteriaConfigurator.precipitationConfigurator()),
+            new LightningsGenerator(dayWeatherForecastList, criteriaConfigurator.lightningsConfigurator()),
+            new CloudsGenerator(dayWeatherForecastList, criteriaConfigurator.cloudsConfigurator()));
     }
 
 

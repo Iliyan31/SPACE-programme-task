@@ -1,5 +1,13 @@
 package bg.solutions.hitachi.space;
 
+import bg.solutions.hitachi.space.criteria.CloudsConfigurator;
+import bg.solutions.hitachi.space.criteria.CriteriaConfigurator;
+import bg.solutions.hitachi.space.criteria.HumidityConfigurator;
+import bg.solutions.hitachi.space.criteria.LightningsConfigurator;
+import bg.solutions.hitachi.space.criteria.PrecipitationConfigurator;
+import bg.solutions.hitachi.space.criteria.TemperatureConfigurator;
+import bg.solutions.hitachi.space.criteria.WindSpeedConfigurator;
+import bg.solutions.hitachi.space.enums.Cloud;
 import bg.solutions.hitachi.space.mission.SpaceMission;
 import bg.solutions.hitachi.space.mission.SpaceMissionAPI;
 
@@ -38,7 +46,7 @@ public class SpaceMissionApp {
                     System.out.print("Der erste muss der Pfad zur Datei sein: ");
                 }
                 String filePath = appInput.nextLine();
-                //validation here
+
 
                 if (!isGermanSet) {
                     System.out.print("The second one must be Sender email address: ");
@@ -46,7 +54,7 @@ public class SpaceMissionApp {
                     System.out.print("Die zweite muss die E-Mail-Adresse des Absenders sein: ");
                 }
                 String sender = appInput.nextLine();
-                //validation here
+
 
                 if (!isGermanSet) {
                     System.out.print("The third one must be Password: ");
@@ -54,7 +62,7 @@ public class SpaceMissionApp {
                     System.out.print("Das dritte muss Passwort sein: ");
                 }
                 String password = appInput.nextLine();
-                //validation here
+
 
                 if (!isGermanSet) {
                     System.out.print("The fourth one must be Receiver email address: ");
@@ -62,22 +70,35 @@ public class SpaceMissionApp {
                     System.out.print("Der vierte muss die E-Mail-Adresse des Empfängers sein: ");
                 }
                 String receiver = appInput.nextLine();
-                //validation here
+
 
                 try {
+                    TemperatureConfigurator temperatureConfigurator = TemperatureConfigurator.builder().build();
+                    WindSpeedConfigurator windSpeedConfigurator = WindSpeedConfigurator.builder().build();
+                    HumidityConfigurator humidityConfigurator = HumidityConfigurator.builder().build();
+                    PrecipitationConfigurator precipitationConfigurator = PrecipitationConfigurator.builder().build();
+                    LightningsConfigurator lightningsConfigurator = LightningsConfigurator.builder().build();
+                    CloudsConfigurator cloudsConfigurator = CloudsConfigurator.builder()
+                        .setCloud(Cloud.CUMULUS)
+                        .setCloud(Cloud.NIMBUS)
+                        .build();
 
+                    CriteriaConfigurator criteriaConfigurator =
+                        new CriteriaConfigurator(temperatureConfigurator, windSpeedConfigurator, humidityConfigurator,
+                            precipitationConfigurator, lightningsConfigurator, cloudsConfigurator);
 
-                    SpaceMissionAPI spaceMission = new SpaceMission(isGermanSet, filePath, sender, password, receiver);
-
+                    SpaceMissionAPI spaceMission = new SpaceMission(isGermanSet, filePath, sender, password, receiver,
+                        criteriaConfigurator);
 
                     System.out.println(spaceMission.findPerfectDayForSpaceShuttleLaunch());
 
-                    var startTime = System.nanoTime();
-                    spaceMission.generateWeatherReport();
-                    var endTime = System.nanoTime();
+                    System.out.println(spaceMission.generateWeatherReport());
 
-                    System.out.println(spaceMission.sendEmail());
-                    System.out.println((endTime - startTime));// / 1_000_000_000
+//                    System.out.println(spaceMission.sendEmail());
+
+//                    var startTime = System.nanoTime();
+//                    var endTime = System.nanoTime();
+//                    System.out.println((endTime - startTime));// / 1_000_000_000
 
                 } catch (FileNotFoundException e) {
                     if (!isGermanSet) {

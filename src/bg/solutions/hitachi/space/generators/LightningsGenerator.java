@@ -1,5 +1,6 @@
 package bg.solutions.hitachi.space.generators;
 
+import bg.solutions.hitachi.space.criteria.LightningsConfigurator;
 import bg.solutions.hitachi.space.entities.DayWeatherForecast;
 
 import java.util.List;
@@ -7,8 +8,12 @@ import java.util.List;
 public class LightningsGenerator {
     private final List<DayWeatherForecast> forecasts;
 
-    public LightningsGenerator(List<DayWeatherForecast> dayWeatherForecasts) {
+    private final LightningsConfigurator lightningsConfigurator;
+
+    public LightningsGenerator(List<DayWeatherForecast> dayWeatherForecasts,
+                               LightningsConfigurator lightningsConfigurator) {
         this.forecasts = dayWeatherForecasts;
+        this.lightningsConfigurator = lightningsConfigurator;
     }
 
     public int getPerfectDay() {
@@ -20,6 +25,6 @@ public class LightningsGenerator {
     }
 
     public boolean areThereNoLightnings(DayWeatherForecast dayWeatherForecast) {
-        return !dayWeatherForecast.lightning();
+        return lightningsConfigurator.areThereNoLightnings(dayWeatherForecast);
     }
 }

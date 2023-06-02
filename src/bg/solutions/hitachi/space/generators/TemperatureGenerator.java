@@ -1,7 +1,7 @@
 package bg.solutions.hitachi.space.generators;
 
+import bg.solutions.hitachi.space.criteria.TemperatureConfigurator;
 import bg.solutions.hitachi.space.entities.DayWeatherForecast;
-import bg.solutions.hitachi.space.enums.Constraints;
 
 import java.util.List;
 
@@ -10,8 +10,12 @@ public class TemperatureGenerator implements StatisticOperations {
     private static final double NO_STATS_PROVIDED = 0.0;
     private final List<DayWeatherForecast> forecasts;
 
-    public TemperatureGenerator(List<DayWeatherForecast> dayWeatherForecasts) {
+    private final TemperatureConfigurator temperatureConfigurator;
+
+    public TemperatureGenerator(List<DayWeatherForecast> dayWeatherForecasts,
+                                TemperatureConfigurator temperatureConfigurator) {
         this.forecasts = dayWeatherForecasts;
+        this.temperatureConfigurator = temperatureConfigurator;
     }
 
     @Override
@@ -63,7 +67,6 @@ public class TemperatureGenerator implements StatisticOperations {
     }
 
     private boolean isTemperatureSuitable(DayWeatherForecast dayWeatherForecast) {
-        return dayWeatherForecast.temperature() > Constraints.MIN_TEMPERATURE_VALUE.getValue() &&
-            dayWeatherForecast.temperature() < Constraints.MAX_TEMPERATURE_VALUE.getValue();
+        return temperatureConfigurator.isTemperatureSuitable(dayWeatherForecast);
     }
 }

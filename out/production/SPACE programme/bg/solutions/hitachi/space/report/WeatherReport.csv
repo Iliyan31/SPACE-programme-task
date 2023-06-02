@@ -1,7 +1,0 @@
-Stats/Parameter,Average value,Max value,Min value,Median value,The most appropriate launch day value by parameter
-Temperature (C),29.733333333333334,32.0,27.0,30.0,1
-Wind (m/s),6.933333333333334,15.0,2.0,5.0,11
-Humidity (%),35.333333333333336,80.0,15.0,30.0,13
-Precipitation (%),8.0,40.0,0.0,0.0,1
-Lightning,null,null,null,null,1
-Clouds,null,null,null,null,3
