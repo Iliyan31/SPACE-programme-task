@@ -87,7 +87,8 @@ public abstract class SpaceMissionValidator {
     void validateSplitRows(String[] row, int columnsNumber, boolean isGermanSet) {
         if (row.length != columnsNumber) {
             if (isGermanSet) {
-                throw new IllegalArgumentException("");
+                throw new IllegalArgumentException(
+                    "Jede Zeile in der Datei muss die gleiche Spaltennummer haben wie die Kopfzeile!");
             }
 
             throw new IllegalArgumentException(
@@ -101,7 +102,7 @@ public abstract class SpaceMissionValidator {
         for (String str : row) {
             if (str == null || str.isEmpty() || str.isBlank()) {
                 if (isGermanSet) {
-                    throw new IllegalArgumentException("");
+                    throw new IllegalArgumentException("Keiner der Zeilenwerte darf null, leer oder leer sein!");
                 }
                 throw new IllegalArgumentException("None of the row values can be null, empty or blank!");
             }

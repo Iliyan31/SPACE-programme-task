@@ -3,6 +3,7 @@ package bg.solutions.hitachi.space.criteria;
 import bg.solutions.hitachi.space.entities.DayWeatherForecast;
 import bg.solutions.hitachi.space.enums.Cloud;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -40,6 +41,11 @@ public class CloudsConfigurator {
 
         public CloudsConfiguratorBuilder setCloud(Cloud cloud) {
             this.forbiddenClouds.add(cloud);
+            return this;
+        }
+
+        public CloudsConfiguratorBuilder setForbiddenClouds(Collection<Cloud> clouds) {
+            this.forbiddenClouds.addAll(clouds);
             return this;
         }
 

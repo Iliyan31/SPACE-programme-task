@@ -1,7 +1,6 @@
 package bg.solutions.hitachi.space.criteria;
 
 import bg.solutions.hitachi.space.entities.DayWeatherForecast;
-import bg.solutions.hitachi.space.enums.Constraints;
 
 public class LightningsConfigurator {
     private final boolean lightnings;
@@ -10,7 +9,7 @@ public class LightningsConfigurator {
         return lightnings;
     }
 
-    public boolean areThereNoLightnings(DayWeatherForecast dayWeatherForecast) {
+    public boolean areThereLightnings(DayWeatherForecast dayWeatherForecast) {
         return dayWeatherForecast.lightning() == lightnings;
     }
 

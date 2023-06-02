@@ -22,7 +22,7 @@ public record CriteriaConfigurator(TemperatureConfigurator temperatureConfigurat
     }
 
     public boolean areThereNoLightnings(DayWeatherForecast dayWeatherForecast) {
-        return lightningsConfigurator.areThereNoLightnings(dayWeatherForecast);
+        return lightningsConfigurator.areThereLightnings(dayWeatherForecast);
     }
 
     public boolean isHumiditySuitable(DayWeatherForecast dayWeatherForecast) {

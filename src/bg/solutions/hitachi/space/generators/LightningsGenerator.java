@@ -25,6 +25,6 @@ public class LightningsGenerator {
     }
 
     public boolean areThereNoLightnings(DayWeatherForecast dayWeatherForecast) {
-        return lightningsConfigurator.areThereNoLightnings(dayWeatherForecast);
+        return lightningsConfigurator.areThereLightnings(dayWeatherForecast);
     }
 }
