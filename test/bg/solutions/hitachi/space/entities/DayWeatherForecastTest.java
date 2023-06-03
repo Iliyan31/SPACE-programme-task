@@ -32,6 +32,18 @@ public class DayWeatherForecastTest {
     }
 
     @Test
+    void testCreateDayWeatherForecastWithHumidityAbove100() {
+        assertThrows(IllegalArgumentException.class, () -> new DayWeatherForecast(1, 0, 1, 101, 0, false, Cloud.CIRRUS)
+            , "The humidity % cannot be above 100%!");
+    }
+
+    @Test
+    void testCreateDayWeatherForecastWithPrecipitationAbove100() {
+        assertThrows(IllegalArgumentException.class, () -> new DayWeatherForecast(1, 0, 1, 1, 101, false, Cloud.CIRRUS)
+            , "The precipitation % cannot be above 100%!");
+    }
+
+    @Test
     void testCreateDayWeatherForecastWithCloudsNull() {
         assertThrows(IllegalArgumentException.class, () -> new DayWeatherForecast(1, 0, 1, 1, 1, false, null)
             , "The clouds value cannot be null!");

@@ -13,12 +13,12 @@ public record DayWeatherForecast(int dayNumber, double temperature, double windS
             throw new IllegalArgumentException("The wind speed cannot be below 0!");
         }
 
-        if (humidity < 0) {
-            throw new IllegalArgumentException("The humidity % cannot be below 0!");
+        if (humidity < 0 || humidity > 100) {
+            throw new IllegalArgumentException("The humidity % cannot be below 0 or above 100!");
         }
 
-        if (precipitation < 0) {
-            throw new IllegalArgumentException("The precipitation % cannot be below 0!");
+        if (precipitation < 0 || precipitation > 100) {
+            throw new IllegalArgumentException("The precipitation % cannot be below 0 or above 100!");
         }
 
         if (clouds == null) {
