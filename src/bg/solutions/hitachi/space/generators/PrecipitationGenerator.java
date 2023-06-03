@@ -6,6 +6,7 @@ import bg.solutions.hitachi.space.entities.DayWeatherForecast;
 import java.util.List;
 
 public class PrecipitationGenerator implements StatisticOperations {
+    private static final int NO_APPROPRIATE_DAY_TO_LAUNCH = -1;
     private final List<DayWeatherForecast> forecasts;
     private final PrecipitationConfigurator precipitationConfigurator;
 
@@ -60,7 +61,7 @@ public class PrecipitationGenerator implements StatisticOperations {
             .filter(this::isThereNoPrecipitation)
             .mapToInt(DayWeatherForecast::dayNumber)
             .findFirst()
-            .orElse(-1);
+            .orElse(NO_APPROPRIATE_DAY_TO_LAUNCH);
     }
 
     private boolean isThereNoPrecipitation(DayWeatherForecast dayWeatherForecast) {

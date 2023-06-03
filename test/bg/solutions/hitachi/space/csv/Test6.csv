@@ -1,0 +1,7 @@
+Day/Parameter,1,2,3,4,5
+Temperature (C),28,28,28,28,28
+Wind (m/s),5,5,5,5,5
+Humidity (%),10,10,10,10,10
+Precipitation (%),0,0,0,0,0
+Lightning,No,No,No,No,No
+Clouds,Stratus,Stratus,Stratus,Stratus,Stratus

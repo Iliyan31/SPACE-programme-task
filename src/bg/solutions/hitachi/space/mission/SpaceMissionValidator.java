@@ -75,12 +75,11 @@ public abstract class SpaceMissionValidator {
         } catch (IOException e) {
             if (isGermanSet) {
                 throw new RuntimeException(
-                    "Bei der Suche nach einem leeren Wetterdatenleser ist in der " +
-                        "Methode ready() ein Problem aufgetreten!", e);
+                    "Bei der Suche nach leeren Wetterdatendateien ist ein Problem aufgetreten!", e);
             }
 
             throw new RuntimeException(
-                "There was problem in ready() method when checking for empty weather data reader!", e);
+                "There was problem when checking for empty weather data file!", e);
         }
     }
 
@@ -94,11 +93,9 @@ public abstract class SpaceMissionValidator {
             throw new IllegalArgumentException(
                 "Every row in the file must have the same columns number as the header row!");
         }
-
-
     }
 
-    private void validateStringInSplitRow(String[] row, boolean isGermanSet) {
+    void validateStringInSplitRow(String[] row, boolean isGermanSet) {
         for (String str : row) {
             if (str == null || str.isEmpty() || str.isBlank()) {
                 if (isGermanSet) {

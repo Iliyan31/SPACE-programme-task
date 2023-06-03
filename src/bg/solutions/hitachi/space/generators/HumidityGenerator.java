@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class HumidityGenerator implements StatisticOperations {
+    private static final int NO_APPROPRIATE_DAY_TO_LAUNCH = -1;
     private final List<DayWeatherForecast> forecasts;
 
     private final HumidityConfigurator humidityConfigurator;
@@ -66,7 +67,7 @@ public class HumidityGenerator implements StatisticOperations {
             return dayWeatherForecast.dayNumber();
         }
 
-        return -1;
+        return NO_APPROPRIATE_DAY_TO_LAUNCH;
     }
 
     private boolean isHumiditySuitable(DayWeatherForecast dayWeatherForecast) {

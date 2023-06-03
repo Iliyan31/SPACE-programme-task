@@ -6,6 +6,7 @@ import bg.solutions.hitachi.space.entities.DayWeatherForecast;
 import java.util.List;
 
 public class LightningsGenerator {
+    private static final int NO_APPROPRIATE_DAY_TO_LAUNCH = -1;
     private final List<DayWeatherForecast> forecasts;
 
     private final LightningsConfigurator lightningsConfigurator;
@@ -21,7 +22,7 @@ public class LightningsGenerator {
             .filter(this::areThereNoLightnings)
             .mapToInt(DayWeatherForecast::dayNumber)
             .findFirst()
-            .orElse(-1);
+            .orElse(NO_APPROPRIATE_DAY_TO_LAUNCH);
     }
 
     public boolean areThereNoLightnings(DayWeatherForecast dayWeatherForecast) {

@@ -9,6 +9,7 @@ import java.io.Writer;
 import java.util.List;
 
 public class ReportGenerator {
+    private static final int NO_APPROPRIATE_DAY_TO_LAUNCH = -1;
     private static final String REPORT_PATH = "./src/bg/solutions/hitachi/space/report/WeatherReport.csv";
     private final boolean isGermanSet;
     private final TemperatureGenerator temperatureGenerator;
@@ -109,7 +110,7 @@ public class ReportGenerator {
             "," +
             temperatureGenerator.findMedian() +
             "," +
-            temperatureGenerator.getPerfectDay() +
+            isTherePerfectDay(temperatureGenerator.getPerfectDay()) +
             System.lineSeparator();
     }
 
@@ -124,7 +125,7 @@ public class ReportGenerator {
             "," +
             windSpeedGenerator.findMedian() +
             "," +
-            windSpeedGenerator.getPerfectDay() +
+            isTherePerfectDay(windSpeedGenerator.getPerfectDay()) +
             System.lineSeparator();
     }
 
@@ -139,7 +140,7 @@ public class ReportGenerator {
             "," +
             humidityGenerator.findMedian() +
             "," +
-            humidityGenerator.getPerfectDay() +
+            isTherePerfectDay(humidityGenerator.getPerfectDay()) +
             System.lineSeparator();
     }
 
@@ -154,20 +155,28 @@ public class ReportGenerator {
             "," +
             precipitationGenerator.findMedian() +
             "," +
-            precipitationGenerator.getPerfectDay() +
+            isTherePerfectDay(precipitationGenerator.getPerfectDay()) +
             System.lineSeparator();
     }
 
     private String getLightningReport() {
         return "Lightning" +
             "," + null + "," + null + "," + null + "," + null + "," +
-            lightningsGenerator.getPerfectDay() +
+            isTherePerfectDay(lightningsGenerator.getPerfectDay()) +
             System.lineSeparator();
     }
 
     private String getCloudsReport() {
         return "Clouds" +
             "," + null + "," + null + "," + null + "," + null + "," +
-            cloudsGenerator.getPerfectDay();
+            isTherePerfectDay(cloudsGenerator.getPerfectDay());
+    }
+
+    private String isTherePerfectDay(int day) {
+        if (day == NO_APPROPRIATE_DAY_TO_LAUNCH) {
+            return "There is no appropriate day to launch";
+        }
+
+        return String.valueOf(day);
     }
 }

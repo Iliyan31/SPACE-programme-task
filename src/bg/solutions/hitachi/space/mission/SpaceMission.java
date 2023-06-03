@@ -136,6 +136,7 @@ public class SpaceMission extends SpaceMissionValidator implements SpaceMissionA
             String[] splitRow = line.split(DELIMITER);
 
             validateSplitRows(splitRow, numberOfColumns, isGermanSet);
+            validateStringInSplitRow(splitRow, isGermanSet);
 
             buffer.add(splitRow);
         }
