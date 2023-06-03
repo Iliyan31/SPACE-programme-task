@@ -16,9 +16,9 @@ The supported operations are:
 | `generate_report`  | `bericht_generieren`| Generates csv report with aggregated statistics data according to the parameters from the input file. |
 | `send_email`       | `email_senden`      | Sends email with the generated report and text with the perfect day to launch to the given receiver using SMTP connection. 
 
-**Note** you can only use the commands supported by the language you have switched! \
+**Note:** You can only use the commands supported by the language you have switched to! \
 \
-For the SMTP connection as a host provider Outlook's host is being used on port 587.
+For SMTP connection as a host provider, Outlook's host is being used on port 587.
 
 ### To run the application you need to have:  
 - *Java version 19*
