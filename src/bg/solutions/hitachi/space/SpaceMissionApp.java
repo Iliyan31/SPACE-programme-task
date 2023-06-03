@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class SpaceMissionApp {
+    private static final int NO_APPROPRIATE_DAY_TO_LAUNCH = -1;
     private static boolean isGermanSet;
     private static SpaceMissionAPI spaceMission = null;
 
@@ -154,37 +155,23 @@ public class SpaceMissionApp {
     }
 
     private static void prepareSpaceMission(Scanner appInput) {
-        if (!isGermanSet) {
-            System.out.println("To proceed you need to enter 4 must parameters as follows:");
-            System.out.print("The first one must be path to file: ");
-        } else {
-            System.out.println("Um fortzufahren, müssen Sie die folgenden vier Parameter eingeben:");
-            System.out.print("Der erste muss der Pfad zur Datei sein: ");
-        }
+        printTextLn("To proceed you need to enter 4 must parameters as follows:",
+            "Um fortzufahren, müssen Sie die folgenden vier Parameter eingeben:");
+        printText("The first one must be path to file: ", "Der erste muss der Pfad zur Datei sein: ");
         String filePath = appInput.nextLine();
 
 
-        if (!isGermanSet) {
-            System.out.print("The second one must be Sender email address: ");
-        } else {
-            System.out.print("Die zweite muss die E-Mail-Adresse des Absenders sein: ");
-        }
+        printText("The second one must be Sender email address: ",
+            "Die zweite muss die E-Mail-Adresse des Absenders sein: ");
         String sender = appInput.nextLine();
 
 
-        if (!isGermanSet) {
-            System.out.print("The third one must be Password: ");
-        } else {
-            System.out.print("Das dritte muss Passwort sein: ");
-        }
+        printText("The third one must be Password: ", "Das dritte muss Passwort sein: ");
         String password = appInput.nextLine();
 
 
-        if (!isGermanSet) {
-            System.out.print("The fourth one must be Receiver email address: ");
-        } else {
-            System.out.print("Der vierte muss die E-Mail-Adresse des Empfängers sein: ");
-        }
+        printText("The fourth one must be Receiver email address: ",
+            "Der vierte muss die E-Mail-Adresse des Empfängers sein: ");
         String receiver = appInput.nextLine();
 
 
@@ -194,7 +181,6 @@ public class SpaceMissionApp {
                 "Möchten Sie Ihre eigenen Parameter hinzufügen? Ja/Nein");
 
             String response = appInput.nextLine();
-
 
             if (response.equalsIgnoreCase("Yes") || response.equalsIgnoreCase("Ja")) {
                 criteriaConfigurator = generateCriteriaByInput(appInput);
@@ -210,7 +196,7 @@ public class SpaceMissionApp {
             printTextLn("Please enter correct filepath!", "Bitte geben Sie den korrekten Dateipfad ein!");
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            printTextLn("Error occured in the app, please restart with \"start\" command",
+            printTextLn("Error occurred in the app, please restart with \"start\" command",
                 "In der App ist ein Fehler aufgetreten, bitte starten Sie mit dem Befehl „Start“ neu.");
         }
     }
@@ -284,8 +270,13 @@ public class SpaceMissionApp {
                 } else {
                     int perfectDay = spaceMission.findPerfectDayForSpaceShuttleLaunch();
 
-                    printTextLn("The perfect day to launch the spache shuttle is: " + perfectDay,
-                        "Der perfekte Tag, um das Spache-Shuttle zu starten, ist" + perfectDay);
+                    if (perfectDay == NO_APPROPRIATE_DAY_TO_LAUNCH) {
+                        printTextLn("Unfortunately there is no perfect day to launch the space shuttle!",
+                            "Leider gibt es keinen perfekten Tag für den Start des Space Shuttles!");
+                    } else {
+                        printTextLn("The perfect day to launch the space shuttle is day No: " + perfectDay,
+                            "Der perfekte Tag, um das Spache-Shuttle zu starten, ist Tag No" + perfectDay);
+                    }
                 }
 
 

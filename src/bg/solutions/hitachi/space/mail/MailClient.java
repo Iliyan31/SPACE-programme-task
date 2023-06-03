@@ -11,19 +11,17 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
 public class MailClient {
+    private static final int NO_APPROPRIATE_DAY_TO_LAUNCH = -1;
     private static final String FILE_PATH = "./src/bg/solutions/hitachi/space/report/WeatherReport.csv";
     private final String senderEmailAddress;
     private final String password;
     private final String receiverEmailAddress;
-
     private final boolean isGermanSet;
-
     private final int perfectDayToLaunch;
 
     public MailClient(String senderEmailAddress, String password, String receiverEmailAddress, int perfectDayToLaunch,
@@ -89,14 +87,22 @@ public class MailClient {
         message.setRecipient(Message.RecipientType.TO, addressTo);
 
         message.setSubject("Weather report for launching space shuttle");
-        message.setText("Based on the given data, the perfect day to launch the space shuttle is "
-            + perfectDayToLaunch);
 
         MimeMultipart multipart = new MimeMultipart();
         MimeBodyPart attachment = new MimeBodyPart();
         attachment.attachFile(new File(FILE_PATH));
 
+        MimeBodyPart text = new MimeBodyPart();
+        if (perfectDayToLaunch == NO_APPROPRIATE_DAY_TO_LAUNCH) {
+            text.setText("Based on the given data, unfortunately there is no perfect day to launch the space shuttle");
+        } else {
+            text.setText("Based on the given data, the perfect day to launch the space shuttle is day No: "
+                + perfectDayToLaunch);
+        }
+
         multipart.addBodyPart(attachment);
+        multipart.addBodyPart(text);
+
         message.setContent(multipart);
     }
 }
